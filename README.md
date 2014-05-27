@@ -16,11 +16,11 @@ NSString *destinationPath = nil;
             
 if (error)            
 {
-	NSLog(@“%@“, error);
+	NSLog(@"%@", error);
 }
 else
 {
-	NSLog(@“%@“, destinationPath);
+	NSLog(@"%@", destinationPath);
  }
 ```
 
