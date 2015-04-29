@@ -21,7 +21,7 @@
 {
     NSError *error = nil;
     
-    [Brett untarFileAtURL:nil withError:&error];
+    [Brett untarFileAtURL:nil withError:&error destinationPath:nil];
     
     XCTAssertNotNil(error);
     XCTAssertEqualObjects(error.domain, BrettErrorDomain);
@@ -32,7 +32,7 @@
 {
     NSError *error = nil;
     
-    [Brett untarFileAtPath:nil withError:&error];
+    [Brett untarFileAtPath:nil withError:&error destinationPath:nil];
     
     XCTAssertNotNil(error);
     XCTAssertEqualObjects(error.domain, BrettErrorDomain);
@@ -43,7 +43,7 @@
 {
     NSURL *fileURL = [self URLForFileNotOnDisk];
     
-    XCTAssertFalse([Brett untarFileAtURL:fileURL withError:nil]);
+    XCTAssertFalse([Brett untarFileAtURL:fileURL withError:nil destinationPath:nil]);
 }
 
 - (void)testUntarFileWhenFileDoesntExistPopulatesAnError
@@ -52,7 +52,7 @@
     
     NSError *error = nil;
     
-    [Brett untarFileAtURL:fileURL withError:&error];
+    [Brett untarFileAtURL:fileURL withError:&error destinationPath:nil];
     
     XCTAssertNotNil(error);
     XCTAssertEqualObjects(error.domain, BrettErrorDomain);

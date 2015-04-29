@@ -20,6 +20,7 @@
 		D2BEC6DF193082B500EA1079 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = D2BEC6D6193082B500EA1079 /* InfoPlist.strings */; };
 		D2BEC6E0193082FC00EA1079 /* BrettTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D2BEC6D3193082B500EA1079 /* BrettTests.m */; };
 		D2BEC6E31930832800EA1079 /* Brett.m in Sources */ = {isa = PBXBuildFile; fileRef = D2BEC6E21930832800EA1079 /* Brett.m */; };
+		D2BF6D071AF0D04B00E672F6 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D2BF6D061AF0D04B00E672F6 /* libz.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,6 +52,7 @@
 		D2BEC6D7193082B500EA1079 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		D2BEC6E11930832800EA1079 /* Brett.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Brett.h; sourceTree = "<group>"; };
 		D2BEC6E21930832800EA1079 /* Brett.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Brett.m; sourceTree = "<group>"; };
+		D2BF6D061AF0D04B00E672F6 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +60,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D2BF6D071AF0D04B00E672F6 /* libz.dylib in Frameworks */,
 				D2BEC6981930826900EA1079 /* CoreGraphics.framework in Frameworks */,
 				D2BEC69A1930826900EA1079 /* UIKit.framework in Frameworks */,
 				D2BEC6961930826900EA1079 /* Foundation.framework in Frameworks */,
@@ -100,6 +103,7 @@
 		D2BEC6941930826900EA1079 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D2BF6D061AF0D04B00E672F6 /* libz.dylib */,
 				D2BEC6951930826900EA1079 /* Foundation.framework */,
 				D2BEC6971930826900EA1079 /* CoreGraphics.framework */,
 				D2BEC6991930826900EA1079 /* UIKit.framework */,
@@ -478,6 +482,7 @@
 				D2BEC6C01930826900EA1079 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		D2BEC6C11930826900EA1079 /* Build configuration list for PBXNativeTarget "BrettTests" */ = {
 			isa = XCConfigurationList;
@@ -486,6 +491,7 @@
 				D2BEC6C31930826900EA1079 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

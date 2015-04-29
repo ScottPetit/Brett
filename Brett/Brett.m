@@ -7,7 +7,7 @@
 //
 
 #import "Brett.h"
-#import <zlib.h>
+#include <zlib.h>
 
 @interface Brett ()
 
@@ -228,7 +228,7 @@ NSString * const BrettErrorDomain = @"com.brett.error";
                 }
                 stream.next_out = (uint8_t *)[unzippedData mutableBytes] + stream.total_out;
                 stream.avail_out = (uInt)([unzippedData length] - stream.total_out);
-                status = inflate (&stream, Z_SYNC_FLUSH);
+                status = inflate(&stream, Z_SYNC_FLUSH);
             }
             if (inflateEnd(&stream) == Z_OK)
             {
@@ -274,7 +274,7 @@ NSString * const BrettErrorDomain = @"com.brett.error";
 {
     if ([object isKindOfClass:[NSData class]])
     {
-        [[NSFileManager defaultManager] createFileAtPath:path contents:[object subdataWithRange:NSMakeRange(location, length)] attributes:nil]; //Write the file on filesystem
+        [[NSFileManager defaultManager] createFileAtPath:path contents:[object subdataWithRange:NSMakeRange(location, length)] attributes:nil]; //Write the file to the filesystem
     }
     else if ([object isKindOfClass:[NSFileHandle class]])
     {
