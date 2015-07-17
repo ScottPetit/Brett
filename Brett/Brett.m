@@ -3,11 +3,58 @@
 //  Brett
 //
 //  Created by Scott Petit on 5/24/14.
+//  Modified by Maicon Peixinho on 7/17/15
 //  Copyright (c) 2014 Scott Petit. All rights reserved.
 //
 
 #import "Brett.h"
-#include <zlib.h>
+#import <zlib.h>
+
+/*
+ * attributes bytes position
+ + Provided by libarchive.
+ */
+//#define	USTAR_name_offset 0
+//#define	USTAR_name_size 100
+//#define	USTAR_mode_offset 100
+//#define	USTAR_mode_size 6
+//#define	USTAR_mode_max_size 8
+//#define	USTAR_uid_offset 108
+//#define	USTAR_uid_size 6
+//#define	USTAR_uid_max_size 8
+//#define	USTAR_gid_offset 116
+//#define	USTAR_gid_size 6
+//#define	USTAR_gid_max_size 8
+//#define	USTAR_size_offset 124
+//#define	USTAR_size_size 11
+//#define	USTAR_size_max_size 12
+//#define	USTAR_mtime_offset 136
+//#define	USTAR_mtime_size 11
+//#define	USTAR_mtime_max_size 11
+//#define	USTAR_checksum_offset 148
+//#define	USTAR_checksum_size 8
+//#define	USTAR_typeflag_offset 156
+//#define	USTAR_typeflag_size 1
+//#define	USTAR_linkname_offset 157
+//#define	USTAR_linkname_size 100
+//#define	USTAR_magic_offset 257
+//#define	USTAR_magic_size 6
+//#define	USTAR_version_offset 263
+//#define	USTAR_version_size 2
+//#define	USTAR_uname_offset 265
+//#define	USTAR_uname_size 32
+//#define	USTAR_gname_offset 297
+//#define	USTAR_gname_size 32
+//#define	USTAR_rdevmajor_offset 329
+//#define	USTAR_rdevmajor_size 6
+//#define	USTAR_rdevmajor_max_size 8
+//#define	USTAR_rdevminor_offset 337
+//#define	USTAR_rdevminor_size 6
+//#define	USTAR_rdevminor_max_size 8
+//#define	USTAR_prefix_offset 345
+//#define	USTAR_prefix_size 155
+//#define	USTAR_padding_offset 500
+//#define	USTAR_padding_size 12
 
 @interface Brett ()
 
@@ -17,7 +64,7 @@
 + (char)fileTypeForObject:(id)object atOffset:(NSUInteger)offset;
 + (NSString *)nameForObject:(id)object atOffset:(NSUInteger)offset;
 + (NSUInteger)sizeForObject:(id)object atOffset:(NSUInteger)offset;
-+ (void)writeFileDataForObject:(id)object atLocation:(NSUInteger)location withLength:(NSUInteger)length atPath:(NSString *)path;
++ (void)writeFileDataForObject:(id)object atLocation:(NSUInteger)location withLength:(NSUInteger)length atPath:(NSString *)path withAttributes:(NSDictionary *)withAttributes;
 + (NSData *)dataForObject:(id)object inRange:(NSRange)range orLocation:(NSUInteger)location andLength:(NSUInteger)length;
 
 @end
@@ -28,6 +75,8 @@ static NSUInteger const BrettTarNamePosition = 0;
 static NSUInteger const BrettTarNameSize = 100;
 static NSUInteger const BrettTarSizePosition = 124;
 static NSUInteger const BrettTarSizeSize = 12;
+static NSUInteger const BrettTarDatePosition = 136;
+static NSUInteger const BrettTarDateSize = 11;
 static NSUInteger const BrettTarMaxBlockLoadInMemory = 100;
 
 NSString * const BrettErrorDomain = @"com.brett.error";
@@ -122,9 +171,11 @@ NSString * const BrettErrorDomain = @"com.brett.error";
                     *destinationPath = filePath;
                 }
                 
+                NSUInteger dateTimestamp = [self dateForObject:tarFile atOffset:location];
+                
                 NSUInteger size = [self sizeForObject:tarFile atOffset:location];
                 
-                if (size == 0)
+                if (size == 0 && dateTimestamp == 0)
                 {
                     [@"" writeToFile:filePath atomically:YES encoding:NSUTF8StringEncoding error:error];
                     break;
@@ -132,7 +183,13 @@ NSString * const BrettErrorDomain = @"com.brett.error";
                 
                 blockCount += (size - 1) / BrettTarBlockSize + 1; // size/TAR_BLOCK_SIZE rounded up
                 
-                [self writeFileDataForObject:tarFile atLocation:(location + BrettTarBlockSize) withLength:size atPath:filePath];
+                NSDictionary* attr = [NSDictionary dictionaryWithObject:[NSNumber numberWithInt:(int)dateTimestamp] forKey:@"dateTimestamp"];
+                
+                [self writeFileDataForObject:tarFile
+                                  atLocation:(location + BrettTarBlockSize)
+                                  withLength:size
+                                      atPath:filePath
+                              withAttributes:attr];
                 break;
             }
                 
@@ -228,7 +285,7 @@ NSString * const BrettErrorDomain = @"com.brett.error";
                 }
                 stream.next_out = (uint8_t *)[unzippedData mutableBytes] + stream.total_out;
                 stream.avail_out = (uInt)([unzippedData length] - stream.total_out);
-                status = inflate(&stream, Z_SYNC_FLUSH);
+                status = inflate (&stream, Z_SYNC_FLUSH);
             }
             if (inflateEnd(&stream) == Z_OK)
             {
@@ -270,11 +327,21 @@ NSString * const BrettErrorDomain = @"com.brett.error";
     return strtol(sizeBytes, NULL, 8); // Size is an octal number, convert to decimal
 }
 
-+ (void)writeFileDataForObject:(id)object atLocation:(NSUInteger)location withLength:(NSUInteger)length atPath:(NSString *)path
+//Extract date from file
++ (NSUInteger)dateForObject:(id)object atOffset:(NSUInteger)offset
+{
+    char dateBytes[BrettTarDateSize + 1]; // TAR_DATE_SIZE+1 for nul char at end
+    
+    memset(&dateBytes, '\0', BrettTarDateSize + 1); // Fill byte array with nul char
+    memcpy(&dateBytes, [self dataForObject:object inRange:NSMakeRange(offset + BrettTarDatePosition, BrettTarDateSize) orLocation:offset + BrettTarDatePosition andLength:BrettTarDateSize].bytes, BrettTarDateSize);
+    return strtol(dateBytes, NULL, 8); // Date is an octal number, convert to decimal
+}
+
++ (void)writeFileDataForObject:(id)object atLocation:(NSUInteger)location withLength:(NSUInteger)length atPath:(NSString *)path withAttributes:(NSDictionary *)withAttributes
 {
     if ([object isKindOfClass:[NSData class]])
     {
-        [[NSFileManager defaultManager] createFileAtPath:path contents:[object subdataWithRange:NSMakeRange(location, length)] attributes:nil]; //Write the file to the filesystem
+        [[NSFileManager defaultManager] createFileAtPath:path contents:[object subdataWithRange:NSMakeRange(location, length)] attributes:nil]; //Write the file on filesystem
     }
     else if ([object isKindOfClass:[NSFileHandle class]])
     {
@@ -294,6 +361,11 @@ NSString * const BrettErrorDomain = @"com.brett.error";
             }
             [destinationFile writeData:[object readDataOfLength:length]];
             [destinationFile closeFile];
+            
+            //if is necessary preserve others attributes, use de POSIX table to discovery
+            NSDate *date = [NSDate dateWithTimeIntervalSince1970:[[withAttributes objectForKey:@"dateTimestamp"] integerValue]];
+            NSDictionary* attr = [NSDictionary dictionaryWithObjectsAndKeys:date, NSFileModificationDate, NULL];
+            [[NSFileManager defaultManager] setAttributes:attr ofItemAtPath:path error: NULL];
         }
     }
 }
