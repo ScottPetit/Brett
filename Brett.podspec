@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name = 'Brett'
-  spec.version = '1.0.0'
+  spec.version = '1.0.1'
   spec.authors = {'Scott Petit' => 'petit.scott@gmail.com'}
   spec.homepage = 'https://github.com/ScottPetit/Brett'
   spec.summary = 'Untar tar files.'
